@@ -93,10 +93,19 @@ abstract class _CustomLayoutStateBase<T extends _SubSwiper> extends State<T>
     for (int i = 0; i < _animationCount; ++i) {
       int realIndex = _currentIndex + i + _startIndex;
       realIndex = realIndex % widget.itemCount;
+
       if (realIndex < 0) {
         realIndex += widget.itemCount;
       }
 
+      // if ((!widget.loop &&
+      //         _currentIndex + i >= 0 &&
+      //         _currentIndex + i < widget.itemCount) ||
+      //     widget.loop) {
+      //   print("Real index: $realIndex $i $animationValue");
+      //   list.add(_buildItem(i, realIndex, animationValue));
+
+      // }
       list.add(_buildItem(i, realIndex, animationValue));
     }
 
@@ -426,9 +435,25 @@ class _CustomLayoutState extends _CustomLayoutStateBase<_CustomLayoutSwiper> {
         height: widget.itemHeight ?? double.infinity,
         child: widget.itemBuilder(context, realIndex));
 
-    for (int i = builders.length - 1; i >= 0; --i) {
-      TransformBuilder builder = builders[i];
-      child = builder.build(index, animationValue, child);
+    if (widget.loop) {
+      for (int i = builders.length - 1; i >= 0; --i) {
+        TransformBuilder builder = builders[i];
+        child = builder.build(index, animationValue, child);
+      }
+    }
+
+    if (!widget.loop) {
+      if ((realIndex - _currentIndex).abs() <= 1) {
+        for (int i = builders.length - 1; i >= 0; i--) {
+          TransformBuilder builder = builders[i];
+          child = builder.build(index, animationValue, child);
+        }
+      } else {
+        child = Opacity(
+          opacity: 0.0,
+          child: child,
+        );
+      }
     }
 
     return child;
